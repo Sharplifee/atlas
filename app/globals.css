@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   Atlas design tokens. One file to retune the entire system.
+   Colors are space-separated RGB channels so Tailwind's <alpha-value> works.
+   ========================================================================== */
+:root {
+  --bg: 9 11 16; /* near-black */
+  --surface: 16 19 27;
+  --surface-2: 22 26 36;
+  --border: 34 40 54;
+  --muted: 120 130 148;
+  --fg: 233 237 245;
+  --fg-soft: 168 178 196;
+  --accent: 96 165 250; /* blue-400 */
+  --good: 52 211 153; /* emerald-400 */
+  --warn: 251 191 36; /* amber-400 */
+  --bad: 248 113 113; /* red-400 */
+  --hero: 129 230 217; /* teal — the cost-per-outcome hero number */
+
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+* {
+  border-color: rgb(var(--border));
+}
+
+html,
+body {
+  background: rgb(var(--bg));
+  color: rgb(var(--fg));
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+/* thin, dense scrollbars to match the chart-forward aesthetic */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--border));
+  border-radius: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* numeric tabular alignment for all metric readouts */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
