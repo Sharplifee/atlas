@@ -272,7 +272,7 @@ create or replace function atlas_create_workspace(
   p_name text,
   p_timezone text default 'America/Denver',
   p_currency text default 'USD'
-) returns uuid language plpgsql security definer set search_path = public as $$
+) returns uuid language plpgsql security definer set search_path = public, extensions as $$
 declare
   v_uid uuid := auth.uid();
   v_ws uuid;
@@ -301,7 +301,7 @@ begin
 
   -- Default webhook source so /api/ingest/outcomes works immediately.
   insert into outcome_sources (workspace_id, kind, name, secret)
-  values (v_ws, 'webhook', 'Primary webhook', encode(gen_random_bytes(24), 'hex'));
+  values (v_ws, 'webhook', 'Primary webhook', encode(extensions.gen_random_bytes(24), 'hex'));
 
   return v_ws;
 end;
