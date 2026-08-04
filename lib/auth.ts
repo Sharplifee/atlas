@@ -1,9 +1,55 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
+import { env } from "@/lib/env";
 import type { Member, Role, Workspace } from "@/lib/types";
 
 export const ACTIVE_WS_COOKIE = "atlas_ws";
+
+/**
+ * Open-access (TEMPORARY): when ATLAS_OPEN_ACCESS is on, resolve a synthetic
+ * owner context bound to a default workspace — no login required. The default
+ * workspace is the one named/ided by ATLAS_OPEN_ACCESS_WS if set, otherwise the
+ * oldest workspace in the database. Returns null only if no workspace exists.
+ */
+async function openAccessContext(): Promise<MemberContext | null> {
+  const svc = createServiceClient();
+  const preferred = opt_("ATLAS_OPEN_ACCESS_WS");
+  let workspace: Workspace | null = null;
+
+  if (preferred) {
+    const { data } = await svc
+      .from("workspaces")
+      .select("*")
+      .or(`id.eq.${preferred},name.eq.${preferred}`)
+      .limit(1)
+      .maybeSingle();
+    workspace = (data as Workspace) ?? null;
+  }
+  if (!workspace) {
+    const { data } = await svc
+      .from("workspaces")
+      .select("*")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    workspace = (data as Workspace) ?? null;
+  }
+  if (!workspace) return null;
+
+  return {
+    userId: "open-access",
+    email: null,
+    workspace,
+    role: "owner",
+  };
+}
+
+function opt_(name: string): string | undefined {
+  const v = process.env[name];
+  return v && v.length > 0 ? v : undefined;
+}
 
 const ROLE_RANK: Record<Role, number> = { viewer: 0, analyst: 1, owner: 2 };
 
@@ -51,6 +97,8 @@ export async function listMemberships(): Promise<
  * to; otherwise falls back to the first membership.
  */
 export async function getActiveMembership(): Promise<MemberContext | null> {
+  if (env.openAccess()) return openAccessContext();
+
   const user = await getUser();
   if (!user) return null;
 
@@ -78,6 +126,13 @@ export async function getActiveMembership(): Promise<MemberContext | null> {
  *    reach write surfaces)
  */
 export async function requireMember(minRole: Role = "viewer"): Promise<MemberContext> {
+  // Open access (TEMPORARY): no session required; serve the default workspace.
+  if (env.openAccess()) {
+    const ctx = await openAccessContext();
+    if (!ctx) redirect("/onboarding");
+    return ctx;
+  }
+
   const user = await getUser();
   if (!user) redirect("/login");
 

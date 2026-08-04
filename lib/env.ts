@@ -51,6 +51,13 @@ export const env = {
   // App
   appUrl: () => opt("APP_URL") ?? "http://localhost:3000",
 
+  // Open access — TEMPORARY, DEFAULT ON. The login gate is bypassed unless
+  // ATLAS_OPEN_ACCESS is explicitly set to "false": every visitor is served a
+  // default workspace as owner, with no authentication. This exposes tenant
+  // data and write surfaces publicly. Set ATLAS_OPEN_ACCESS=false to restore
+  // the normal Supabase login gate. REVERT THIS DEFAULT BEFORE ANY REAL LAUNCH.
+  openAccess: () => opt("ATLAS_OPEN_ACCESS") !== "false",
+
   // True only when the minimum Supabase config is present. Pages use this to
   // render a graceful "not configured" state instead of crashing.
   isConfigured: () =>
