@@ -1,3 +1,4 @@
+import { withEventLog } from "@/lib/eventLog";
 import { json } from "@/lib/cron";
 import { createServiceClient } from "@/lib/supabase/service";
 import {
@@ -16,7 +17,7 @@ export const dynamic = "force-dynamic";
  * Any sender that can fire an HTTP request can feed Atlas — this is the
  * decoupling layer. Atlas never reaches into anyone's CRM.
  */
-export async function POST(req: Request) {
+async function __POST(req: Request) {
   const key = req.headers.get("x-atlas-key");
   if (!key) return json({ error: "missing x-atlas-key" }, 401);
 
@@ -62,3 +63,5 @@ export async function POST(req: Request) {
     results,
   });
 }
+
+export const POST = withEventLog("POST /api/ingest/outcomes", __POST);

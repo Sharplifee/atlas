@@ -1,12 +1,13 @@
 import { checkCronAuth, json } from "@/lib/cron";
 import { runCompetitorPull } from "@/lib/pull/competitors";
+import { withEventLog } from "@/lib/eventLog";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 // Cron: 10 7 * * *
-export async function GET(req: Request) {
+async function __GET(req: Request) {
   const denied = checkCronAuth(req);
   if (denied) return denied;
   const url = new URL(req.url);
@@ -18,3 +19,5 @@ export async function GET(req: Request) {
     return json({ ok: false, error: e?.message ?? String(e) }, 500);
   }
 }
+
+export const GET = withEventLog("GET /api/pull/competitors", __GET);

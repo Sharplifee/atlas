@@ -1,13 +1,14 @@
 import { checkCronAuth, json } from "@/lib/cron";
 import { runAgentAllWorkspaces } from "@/lib/agent/atlas";
 import { env } from "@/lib/env";
+import { withEventLog } from "@/lib/eventLog";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
 // Cron: 30 3 * * *
-export async function GET(req: Request) {
+async function __GET(req: Request) {
   const denied = checkCronAuth(req);
   if (denied) return denied;
   if (!env.agentEnabled()) {
@@ -20,3 +21,5 @@ export async function GET(req: Request) {
     return json({ ok: false, error: e?.message ?? String(e) }, 500);
   }
 }
+
+export const GET = withEventLog("GET /api/agent/nightly", __GET);

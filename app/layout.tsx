@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import EventLogClient from "@/components/EventLogClient";
 
 export const metadata: Metadata = {
   title: "Atlas — Advertising Intelligence",
@@ -14,7 +15,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-bg text-fg antialiased">{children}</body>
+      <body className="min-h-screen bg-bg text-fg antialiased">
+        <EventLogClient />
+        {children}
+      </body>
     </html>
   );
 }

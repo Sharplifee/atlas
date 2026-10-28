@@ -1,11 +1,12 @@
 import { json } from "@/lib/cron";
 import { env } from "@/lib/env";
+import { withEventLog } from "@/lib/eventLog";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /** Public liveness probe. Reports configuration status without leaking secrets. */
-export async function GET() {
+async function __GET() {
   return json({
     ok: true,
     service: "atlas",
@@ -15,3 +16,5 @@ export async function GET() {
     time: new Date().toISOString(),
   });
 }
+
+export const GET = withEventLog("GET /api/health", __GET);
